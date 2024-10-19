@@ -1,0 +1,104 @@
+CREATE TABLE Users (
+    UserID INT PRIMARY KEY IDENTITY(1,1),
+    FIO NVARCHAR(100) NOT NULL,
+    Phone NVARCHAR(15) NOT NULL,
+    Login NVARCHAR(50) NOT NULL UNIQUE,
+    Password NVARCHAR(50) NOT NULL,
+    UserType NVARCHAR(50) NOT NULL
+);
+
+CREATE TABLE LoginHistory (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Login NVARCHAR(100),
+    AttemptTime DATETIME,
+    Status NVARCHAR(50)
+);
+
+ALTER TABLE LoginHistory
+ADD IsSuccessful BIT;
+
+CREATE TABLE TechTypes (
+    TypeID INT PRIMARY KEY IDENTITY(1,1),
+    TypeName NVARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE RequestStatuses (
+    StatusID INT PRIMARY KEY IDENTITY(1,1),
+    StatusName NVARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE Requests (
+    RequestID INT PRIMARY KEY IDENTITY(1,1),
+    StartDate DATETIME NOT NULL,
+    HomeTechTypeID INT NOT NULL,
+    HomeTechModel NVARCHAR(100) NOT NULL,
+    ProblemDescription NVARCHAR(255) NOT NULL,
+    RequestStatusID INT NOT NULL,
+    CompletionDate DATETIME,
+    MasterID INT,
+    ClientID INT NOT NULL,
+    FOREIGN KEY (HomeTechTypeID) REFERENCES TechTypes(TypeID) ON DELETE CASCADE,
+    FOREIGN KEY (RequestStatusID) REFERENCES RequestStatuses(StatusID) ON DELETE CASCADE,
+    FOREIGN KEY (MasterID) REFERENCES Users(UserID) ON DELETE SET NULL,
+    FOREIGN KEY (ClientID) REFERENCES Users(UserID) ON DELETE NO ACTION 
+);
+
+CREATE TABLE Comments (
+    CommentID INT PRIMARY KEY IDENTITY(1,1),
+    Message NVARCHAR(255) NOT NULL,
+    MasterID INT NOT NULL,
+    RequestID INT NOT NULL,
+    FOREIGN KEY (MasterID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (RequestID) REFERENCES Requests(RequestID) ON DELETE CASCADE
+);
+
+
+CREATE TABLE RepairParts (
+    PartID INT PRIMARY KEY IDENTITY(1,1),
+    PartName NVARCHAR(100) NOT NULL,
+    RequestID INT NOT NULL,
+    FOREIGN KEY (RequestID) REFERENCES Requests(RequestID) ON DELETE CASCADE
+);
+
+INSERT INTO Users (FIO, Phone, Login, Password, UserType) VALUES
+('Трубин Никита Юрьевич', '89210563128', 'kasoo', 'root', 'Менеджер'),
+('Мурашов Андрей Юрьевич', '89535078985', 'murashov123', 'qwerty', 'Мастер'),
+('Степанов Андрей Викторович', '89210673849', 'test1', 'test1', 'Мастер'),
+('Перина Анастасия Денисовна', '89990563748', 'perinaAD', '250519', 'Оператор'),
+('Мажитова Ксения Сергеевна', '89994563847', 'krutiha1234567', '1234567890', 'Оператор'),
+('Семенова Ясмина Марковна', '89994563847', 'login1', 'pass1', 'Мастер'),
+('Баранова Эмилия Марковна', '89994563841', 'login2', 'pass2', 'Заказчик'),
+('Егорова Алиса Платоновна', '89994563842', 'login3', 'pass3', 'Заказчик'),
+('Титов Максим Иванович', '89994563843', 'login4', 'pass4', 'Заказчик'),
+('Иванов Марк Максимович', '89994563844', 'login5', 'pass5', 'Мастер');
+
+INSERT INTO TechTypes (TypeName) VALUES
+('Фен'),
+('Тостер'),
+('Холодильник'),
+('Стиральная машина'),
+('Мультиварка');
+
+INSERT INTO RequestStatuses (StatusName) VALUES
+('Новая заявка'),
+('В процессе ремонта'),
+('Готова к выдаче');
+
+INSERT INTO Requests (StartDate, HomeTechTypeID, HomeTechModel, ProblemDescription, RequestStatusID, CompletionDate, MasterID, ClientID) VALUES
+('2023-06-06', 1, 'Ладомир ТА112 белый', 'Перестал работать', 2, NULL, 2, 7),
+('2023-05-05', 2, 'Redmond RT-437 черный', 'Перестал работать', 2, NULL, 3, 7),
+('2022-07-07', 3, 'Indesit DS 316 W белый', 'Не морозит одна из камер холодильника', 3, '2023-01-01', 2, 8),
+('2023-08-02', 4, 'DEXP WM-F610NTMA/WW белый', 'Перестали работать многие режимы стирки', 1, NULL, NULL, 8),
+('2023-08-02', 5, 'Redmond RMC-M95 черный', 'Перестала включаться', 1, NULL, NULL, 9),
+('2023-08-02', 1, 'Ладомир ТА113 чёрный', 'Перестал работать', 3, '2023-08-03', 2, 7),
+('2023-07-09', 3, 'Indesit DS 314 W серый', 'Гудит, но не замораживает', 3, '2023-08-03', 2, 8);
+
+INSERT INTO Comments (Message, MasterID, RequestID) VALUES
+('Интересная поломка', 2, 1),
+('Очень странно, будем разбираться!', 3, 2),
+('Скорее всего потребуется мотор обдува!', 2, 7),
+('Интересная поломка', 2, 1),
+('Очень странно, будем разбираться!', 3, 6);
+
+INSERT INTO RepairParts (PartName, RequestID) VALUES
+('Мотор обдува морозильной камеры холодильника', 7);
